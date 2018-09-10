@@ -28,6 +28,18 @@ namespace Test.Redis
         }
 
         [TestMethod]
+        public void TestGetSetByteKey()
+        {
+            var redis = ConnectionMultiplexer.Connect("localhost");
+            var db = redis.GetDatabase();
+
+            var key = Guid.NewGuid().ToByteArray();
+            Assert.IsNull((string)db.StringGet(key));
+            db.StringSet(key, "byte key");
+            Assert.AreEqual((string)db.StringGet(key), "byte key");
+        }
+
+        [TestMethod]
         public void TestGetSetInt()
         {
             var redis = ConnectionMultiplexer.Connect("localhost");
