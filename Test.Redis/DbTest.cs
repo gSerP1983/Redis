@@ -97,6 +97,33 @@ namespace Test.Redis
             Assert.AreEqual((string)db.StringGet(key), "fire and forget");
         }
 
+        [TestMethod]
+        public void TestPipelining()
+        {
+            var redis = ConnectionMultiplexer.Connect("localhost");
+            var db = redis.GetDatabase();
+
+            var key1 = Guid.NewGuid().ToString();
+            var key2 = Guid.NewGuid().ToString();
+            var key3 = Guid.NewGuid().ToString();
+
+            db.StringSet(key1, "val1");
+            db.StringSet(key2, "val2");
+            db.StringSet(key3, "val3");
+
+            var task1 = db.StringGetAsync(key1);
+            var task2 = db.StringGetAsync(key2);
+            var task3 = db.StringGetAsync(key3);
+
+            var res1 = (string)db.Wait(task1);
+            var res2 = (string)db.Wait(task2);
+            var res3 = (string)db.Wait(task3);
+
+            Assert.AreEqual(res1, "val1");
+            Assert.AreEqual(res2, "val2");
+            Assert.AreEqual(res3, "val3");
+        }
+
         [TestCleanup]
         public void TestCleanup()
         {
