@@ -16,7 +16,7 @@ namespace Test.Redis
         }
 
         [TestMethod]
-        public void TestGetSetString()
+        public void TestStringVal()
         {
             var redis = ConnectionMultiplexer.Connect("localhost");
             var db = redis.GetDatabase();
@@ -28,7 +28,7 @@ namespace Test.Redis
         }
 
         [TestMethod]
-        public void TestGetSetByteKey()
+        public void TestByteKey()
         {
             var redis = ConnectionMultiplexer.Connect("localhost");
             var db = redis.GetDatabase();
@@ -40,7 +40,7 @@ namespace Test.Redis
         }
 
         [TestMethod]
-        public void TestGetSetInt()
+        public void TestIntVal()
         {
             var redis = ConnectionMultiplexer.Connect("localhost");
             var db = redis.GetDatabase();
@@ -49,6 +49,19 @@ namespace Test.Redis
             Assert.IsNull((int?)db.StringGet(key));
             db.StringSet(key, 2703);
             Assert.AreEqual((int?)db.StringGet(key), 2703);
+        }
+
+        [TestMethod]
+        public void TestGetSet()
+        {
+            var redis = ConnectionMultiplexer.Connect("localhost");
+            var db = redis.GetDatabase();
+
+            var key = Guid.NewGuid().ToString();
+            Assert.IsNull((string)db.StringGet(key));
+            db.StringSet(key, "val1");
+            Assert.AreEqual((string)db.StringGetSet(key, "val2"), "val1");
+            Assert.AreEqual((string)db.StringGet(key), "val2");
         }
 
         [TestMethod]

@@ -4,3 +4,6 @@ docker run -p 6379:6379 --name redis-container -d redis:alpine
 sudo apt-get install redis-tools
 redis-cli ping
 redis-cli FLUSHALL
+
+Шпаргалка:
+https://habr.com/post/204354/
