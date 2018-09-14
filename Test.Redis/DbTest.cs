@@ -168,6 +168,24 @@ namespace Test.Redis
             Assert.AreEqual(db.KeyType(key), RedisType.String);
         }
 
+        [TestMethod]
+        public void TestRename()
+        {
+            var redis = ConnectionMultiplexer.Connect("localhost");
+            var db = redis.GetDatabase();
+            var key1 = Guid.NewGuid().ToString();
+            var key2 = Guid.NewGuid().ToString();
+
+            db.StringSet(key1, "val");
+            Assert.AreEqual((string) db.StringGet(key1), "val");
+            Assert.IsTrue(db.KeyExists(key1));
+
+            db.KeyRename(key1, key2);
+            Assert.AreEqual((string)db.StringGet(key2), "val");
+            Assert.IsFalse(db.KeyExists(key1));
+            Assert.IsTrue(db.KeyExists(key2));
+        }
+
 
         [TestCleanup]
         public void TestCleanup()
