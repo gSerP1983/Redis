@@ -16,6 +16,23 @@ namespace Test.Redis
         }
 
         [TestMethod]
+        public void TestKeyExists()
+        {
+            var redis = ConnectionMultiplexer.Connect("localhost");
+            var db = redis.GetDatabase();
+            var key = Guid.NewGuid().ToString();
+
+            Assert.IsNull((string)db.StringGet(key));
+            Assert.IsFalse(db.KeyExists(key));
+
+            db.StringSet(key, "val");
+            Assert.IsTrue(db.KeyExists(key));
+
+            db.KeyDelete(key);
+            Assert.IsFalse(db.KeyExists(key));
+        }
+
+        [TestMethod]
         public void TestStringVal()
         {
             var redis = ConnectionMultiplexer.Connect("localhost");
@@ -137,13 +154,28 @@ namespace Test.Redis
             Assert.AreEqual(res3, "val3");
         }
 
+        [TestMethod]
+        public void TestStringKeyType()
+        {
+            var redis = ConnectionMultiplexer.Connect("localhost");
+            var db = redis.GetDatabase();
+
+            var key = Guid.NewGuid().ToString();
+            db.StringSet(key, "string");
+            Assert.AreEqual(db.KeyType(key), RedisType.String);
+
+            db.StringSet(key, 12.56);
+            Assert.AreEqual(db.KeyType(key), RedisType.String);
+        }
+
+
         [TestCleanup]
         public void TestCleanup()
         {
             FlushAllDatabases();
         }
 
-        private void FlushAllDatabases()
+        private static void FlushAllDatabases()
         {
             var redis = ConnectionMultiplexer.Connect("localhost,allowAdmin=true");
             var endpoints = redis.GetEndPoints();
