@@ -186,6 +186,31 @@ namespace Test.Redis
             Assert.IsTrue(db.KeyExists(key2));
         }
 
+        [TestMethod]
+        public void TestKeyPrefix()
+        {
+            var redis = ConnectionMultiplexer.Connect("localhost");
+            var endpoints = redis.GetEndPoints();
+            var server = redis.GetServer(endpoints.First());
+            var db = redis.GetDatabase();
+
+            var keys = new[] { "prefix-1-" + Guid.NewGuid(), "prefix-2-" + Guid.NewGuid() };
+            var arr = new [] { "val-1", "val-2" };
+            db.StringSet(keys[0], arr[0]);
+            db.StringSet(keys[1], arr[1]);
+
+            var keyScan = server.Keys(pattern: "prefix*").ToArray();
+            Assert.AreEqual(2, keyScan.Length);
+            Assert.IsTrue(keys.Contains(keyScan[0].ToString()));
+            Assert.IsTrue(keys.Contains(keyScan[1].ToString()));
+            Assert.IsTrue(arr.Contains((string)db.StringGet(keyScan[0])));
+            Assert.IsTrue(arr.Contains((string)db.StringGet(keyScan[1])));
+
+            db.KeyDelete(keyScan[0]);
+            keyScan = server.Keys(pattern: "prefix*").ToArray();
+            Assert.AreEqual(1, keyScan.Length);
+        }
+
 
         [TestCleanup]
         public void TestCleanup()
