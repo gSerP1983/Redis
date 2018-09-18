@@ -12,7 +12,6 @@ namespace Test.Redis
         [TestInitialize]
         public void TestInitialize()
         {
-            FlushAllDatabases();
         }
 
         [TestMethod]
@@ -212,18 +211,27 @@ namespace Test.Redis
         }
 
 
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            FlushAllDatabases();
-        }
-
-        private static void FlushAllDatabases()
+        [TestMethod]
+        public void ZTestFlushAllDatabases()
         {
             var redis = ConnectionMultiplexer.Connect("localhost,allowAdmin=true");
             var endpoints = redis.GetEndPoints();
             var server = redis.GetServer(endpoints.First());
+
+            var db = redis.GetDatabase();
+            db.StringSet(Guid.NewGuid().ToString(), "val1");
+
+            var len = server.Keys(pattern: "*").ToArray().Length;
+            Assert.IsTrue(len > 0);
             server.FlushAllDatabases();
+            Assert.AreEqual(0, server.Keys(pattern: "*").ToArray().Length);
         }
+
+
+        [TestCleanup]
+        public void TestCleanup()
+        {
+        }
+
     }
 }
