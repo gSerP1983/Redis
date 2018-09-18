@@ -214,6 +214,8 @@ namespace Test.Redis
         [TestMethod]
         public void ZTestFlushAllDatabases()
         {
+            Thread.Sleep(500);
+
             var redis = ConnectionMultiplexer.Connect("localhost,allowAdmin=true");
             var endpoints = redis.GetEndPoints();
             var server = redis.GetServer(endpoints.First());
