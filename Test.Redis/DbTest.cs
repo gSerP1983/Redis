@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StackExchange.Redis;
 
@@ -144,13 +145,40 @@ namespace Test.Redis
             var task2 = db.StringGetAsync(key2);
             var task3 = db.StringGetAsync(key3);
 
-            var res1 = (string)db.Wait(task1);
-            var res2 = (string)db.Wait(task2);
-            var res3 = (string)db.Wait(task3);
+            db.WaitAll(task1, task2, task3);
+            
+            Assert.AreEqual(task1.Result, "val1");
+            Assert.AreEqual(task2.Result, "val2");
+            Assert.AreEqual(task3.Result, "val3");
+        }
 
-            Assert.AreEqual(res1, "val1");
-            Assert.AreEqual(res2, "val2");
-            Assert.AreEqual(res3, "val3");
+        [TestMethod]
+        public void TestBatching()
+        {
+            var redis = ConnectionMultiplexer.Connect("localhost");
+            var db = redis.GetDatabase();
+
+            // BEGIN BATCH
+            var batch = db.CreateBatch();
+
+            var key1 = Guid.NewGuid().ToString();
+            var key2 = Guid.NewGuid().ToString();
+            var key3 = Guid.NewGuid().ToString();
+
+            db.StringSet(key1, "val1");
+            db.StringSet(key2, "val2");
+            db.StringSet(key3, "val3");
+
+            var task1 = batch.StringGetAsync(key1);
+            var task2 = batch.StringGetAsync(key2);
+            var task3 = batch.StringGetAsync(key3);
+
+            batch.Execute();
+            // END BATCH
+
+            Assert.AreEqual(task1.Result, "val1");
+            Assert.AreEqual(task2.Result, "val2");
+            Assert.AreEqual(task3.Result, "val3");
         }
 
         [TestMethod]
