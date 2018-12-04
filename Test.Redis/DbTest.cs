@@ -182,6 +182,40 @@ namespace Test.Redis
         }
 
         [TestMethod]
+        public void TestTransaction()
+        {
+            var redis = ConnectionMultiplexer.Connect("localhost");
+            var db = redis.GetDatabase();
+
+            var key = Guid.NewGuid().ToString();
+            db.StringSet(key, "val1");
+
+            var tx = db.CreateTransaction();
+            tx.StringSetAsync(key, "val2");
+            Assert.AreEqual((string)db.StringGet(key), "val1");
+            tx.Execute();
+
+            Assert.AreEqual((string)db.StringGet(key), "val2");
+        }
+
+        [TestMethod]
+        public void TestTransactionWithCondition()
+        {
+            var redis = ConnectionMultiplexer.Connect("localhost");
+            var db = redis.GetDatabase();
+
+            var key = Guid.NewGuid().ToString();
+            db.StringSet(key, "val1");
+
+            var tx = db.CreateTransaction();
+            tx.AddCondition(Condition.KeyNotExists(key));
+            tx.StringSetAsync(key, "val2");            
+            tx.Execute();
+            Assert.AreEqual((string)db.StringGet(key), "val1");
+        }
+
+
+        [TestMethod]
         public void TestStringKeyType()
         {
             var redis = ConnectionMultiplexer.Connect("localhost");
