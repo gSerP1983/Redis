@@ -193,7 +193,7 @@ namespace Test.Redis
             var tx = db.CreateTransaction();
             tx.StringSetAsync(key, "val2");
             Assert.AreEqual((string)db.StringGet(key), "val1");
-            tx.Execute();
+            Assert.IsTrue(tx.Execute());
 
             Assert.AreEqual((string)db.StringGet(key), "val2");
         }
@@ -210,7 +210,7 @@ namespace Test.Redis
             var tx = db.CreateTransaction();
             tx.AddCondition(Condition.KeyNotExists(key));
             tx.StringSetAsync(key, "val2");            
-            tx.Execute();
+            Assert.IsFalse(tx.Execute());
             Assert.AreEqual((string)db.StringGet(key), "val1");
         }
 
